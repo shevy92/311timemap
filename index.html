@@ -65,7 +65,7 @@
 			  $.each( data, function( key, val ) {
                 var thedate = new Date(Date.parse(val.ticket_created_date_time))
                 
-                if (val.longitude) {
+                if (val.longitude && val.case_owner== 'Waste_Management') {
                   var feature = {"properties": 
 			  							{
                                             //"epoch": val.ticket_created_date_time
@@ -89,18 +89,10 @@
             for (i=0; i<geo.features.length; i++) {
                 
                 if (geo.features[i] != undefined ) {
-                    //console.log(geo.features[i].properties.epoch.getYear()+1900);
-                    //console.log(geo.features[i].properties.epoch, document.getElementById('monthdropdown').value);
-                    
-                    //if (geo.features[i].properties.epoch.getMonth()+1 == document.getElementById('monthdropdown').value) {
-                    //L.marker(geo.features[i].geometry.coordinates).addTo(map);
-                    
-                    /*
-                    if (geo.features[i].properties.epoch.getYear()+1900 == document.getElementById('yeardropdown').value) {
-                    L.marker(geo.features[i].geometry.coordinates).addTo(map);
-                    */
                     var geomarker= new L.marker(geo.features[i].geometry.coordinates).addTo(map);
                     marker.push(geomarker);
+                    //console.log(geo.features[i].properties.status);
+                    //geo.features[i].properties.epoch.getMonth()+1
                 }
             }
             
@@ -110,10 +102,10 @@
             
         });
         
-            
-        var select = document.getElementById("yeardropdown");
-            select.onchange = function(){
-                //console.log(document.getElementById("yeardropdown").value);
+        
+//YEAR SELECTION-------------------------------------------------------------------------        
+        var selectyear = document.getElementById("yeardropdown");
+            selectyear.onchange = function(){
                 for (i=0;i<marker.length;i++) {
                     map.removeLayer(marker[i]);
                 }
@@ -125,10 +117,42 @@
                             var geomarker= L.marker(geo.features[i].geometry.coordinates).addTo(map);
                             marker.push(geomarker);
                         }
+                        else if (document.getElementById('yeardropdown').value == 'ALL') {
+                            var geomarker= new L.marker(geo.features[i].geometry.coordinates).addTo(map);
+                            marker.push(geomarker);
+                        }
                     }
                 }
             }
             
+//MONTH SELECTION-------------------------------------------------------------------------        
+        var selectmonth = document.getElementById("monthdropdown");
+            selectmonth.onchange = function(){
+                console.log(document.getElementById("monthdropdown").value);
+                
+                for (i=0;i<marker.length;i++) {
+                    map.removeLayer(marker[i]);
+                }
+                marker= [];
+                
+                for (i=0; i<geo.features.length; i++) {
+                    if (geo.features[i] != undefined ) {
+                        if (geo.features[i].properties.epoch.getMonth()+1 == document.getElementById('monthdropdown').value) {
+                            var geomarker= L.marker(geo.features[i].geometry.coordinates).addTo(map);
+                            marker.push(geomarker);
+                        }
+                        else if (document.getElementById('yeardropdown').value == 'ALL') {
+                            var geomarker= new L.marker(geo.features[i].geometry.coordinates).addTo(map);
+                            marker.push(geomarker);
+                        }
+                    }
+                }
+                
+            }
+            
+
+            
+//-------------------------------------------------------------------------  
         //map layers
         var latlng = L.latLng(25.7353, -80.3089);
 		var map = L.map('map').setView(latlng, 10);
