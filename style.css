@@ -7,6 +7,10 @@ body {
 	width: 600px;
 }
 
+.rightbutton {
+    margin-left: 140px;
+}
+
 .right {
     margin-left: 300px;
     margin-top: -55px;
