@@ -25,15 +25,21 @@
 <body>
     <h1 id="title">Miami-Dade 311 Requests: Waste Management</h1>
 
-    <h3>Select Date to view: </h3>
+    <h3 >Select Date to view: </h3>
     <!--Dates form -->
-    <form action="" name="someform">
+    <form action="" name="dateform">
         <select id="daydropdown">
         </select> 
         <select id="monthdropdown">
         </select> 
         <select id="yeardropdown">
         </select> 
+    </form>
+    
+    <form action="" name="typeform" class="right">
+      <input type="checkbox" name="type" value="Open"> Open Tickets<br>
+      <input type="checkbox" name="type" value="Open Overdue"> Open Overdue Tickets<br>
+      <input type="checkbox" name="type" value="All" checked> All Tickets
     </form>
 
     <script type="text/javascript">
@@ -48,10 +54,10 @@
     <div id="map"></div>
     
 	<script>
-        var sliderControl = null;
+        var marker = new Array();
         
         //handle json/geojson
-		var api_url = "https://opendata.miamidade.gov/resource/dj6j-qg5t.json";
+		var api_url = "https://opendata.miamidade.gov/resource/rbng-6mha.json";
 		var geo = {"type": "FeatureCollection",
 				   "features": []};
 
@@ -59,7 +65,7 @@
 			  $.each( data, function( key, val ) {
                 var thedate = new Date(Date.parse(val.ticket_created_date_time))
                 
-                //if (val.longitude) {
+                if (val.longitude) {
                   var feature = {"properties": 
 			  							{
                                             //"epoch": val.ticket_created_date_time
@@ -73,30 +79,58 @@
 			  							},
                                    "type": "Feature"
 			  						}
-                 // }
+                  }
 			  		geo.features.push(feature);
 			  });
 
-			  //geo is ready, time to implement
-            //var thedate = new Date(Date.parse(geo.features[i].properties.epoch));
-            //console.log(thedate.getTime());
             
             
             //Plot points
             for (i=0; i<geo.features.length; i++) {
                 
-                //console.log(geo.features[i].geometry.coordinates);
-                if (geo.features[i] != undefined && geo.features[i].properties.owner == "Waste_Management") {
-                    console.log(geo.features[i].properties.status);
+                if (geo.features[i] != undefined ) {
+                    //console.log(geo.features[i].properties.epoch.getYear()+1900);
+                    //console.log(geo.features[i].properties.epoch, document.getElementById('monthdropdown').value);
+                    
+                    //if (geo.features[i].properties.epoch.getMonth()+1 == document.getElementById('monthdropdown').value) {
+                    //L.marker(geo.features[i].geometry.coordinates).addTo(map);
+                    
+                    /*
+                    if (geo.features[i].properties.epoch.getYear()+1900 == document.getElementById('yeardropdown').value) {
                     L.marker(geo.features[i].geometry.coordinates).addTo(map);
+                    */
+                    var geomarker= new L.marker(geo.features[i].geometry.coordinates).addTo(map);
+                    marker.push(geomarker);
                 }
+            }
+            
+            for (i=0;i<marker.length;i++) {
+                map.addLayer(marker[i]);
             }
             
         });
         
             
+        var select = document.getElementById("yeardropdown");
+            select.onchange = function(){
+                //console.log(document.getElementById("yeardropdown").value);
+                for (i=0;i<marker.length;i++) {
+                    map.removeLayer(marker[i]);
+                }
+                marker= [];
+                
+                for (i=0; i<geo.features.length; i++) {
+                    if (geo.features[i] != undefined ) {
+                        if (geo.features[i].properties.epoch.getYear()+1900 == document.getElementById('yeardropdown').value) {
+                            var geomarker= L.marker(geo.features[i].geometry.coordinates).addTo(map);
+                            marker.push(geomarker);
+                        }
+                    }
+                }
+            }
+            
         //map layers
-        var latlng = L.latLng(25.7153, -80.3089);
+        var latlng = L.latLng(25.7353, -80.3089);
 		var map = L.map('map').setView(latlng, 10);
         
 
@@ -106,28 +140,7 @@
 		      minZoom: 9
 		    }).addTo(map);
         
-        
-        /*
-            //slider
-            var testlayer = L.geoJson(geo),
-                sliderControl = L.control.sliderControl({
-                    position: "topright",
-                    layer: testlayer
-                });
-            sliderControl = L.control.sliderControl({
-                position: "topright",
-                layer: testlayer, 
-                timeAttribute: "epoch",
-                isEpoch: true,
-                range: true
-            });
-
-            //Make sure to add the slider to the map ;-)
-            map.addControl(sliderControl);
-            //And initialize the slider
-            sliderControl.startSlider();
-
-        */
+      
 
 	</script>
 </body>
