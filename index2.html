@@ -23,7 +23,9 @@
     
 </head>
 <body>
-    <h1 id="title">Miami-Dade 311 Requests: Waste Management</h1>
+    
+<div id="wrapper">
+    <h2 id="title">Miami-Dade 311 Requests</h2>
 
     <h3 >Select Date to view: </h3>
     <!--Dates form -->
@@ -39,11 +41,13 @@
     
     <button onclick="setDate()" class="rightbutton">Set</button>
     
+    <!--
     <form action="" name="typeform" class="right">
       <input type="checkbox" name="type" value="Open"> Open Tickets<br>
-      <input type="checkbox" name="type" value="Open Overdue"> Open Overdue Tickets<br>
+      <input type="checkbox" name="type" value="Open Overdue"> Open Overdue Tickets<br> 
       <input type="checkbox" name="type" value="All" checked> All Tickets
     </form>
+-->
 
     <script type="text/javascript">
         //populatedropdown(id_of_day_select, id_of_month_select, id_of_year_select)
@@ -97,15 +101,26 @@
             for (i=0; i<geo.features.length; i++) {
                 
                 if (geo.features[i] != undefined ) {
-                    //var geomarker= new L.marker(geo.features[i].geometry.coordinates).addTo(map);
-                    //marker.push(geomarker);
-                    console.log(geo.features[i].properties.epoch);
-                    //geo.features[i].properties.epoch.getMonth()+1
+                    var list = "<dd>" + geo.features[i].properties.owner + "</dd>"
+                               + "<dd>" + geo.features[i].geometry.coordinates + "</dd>"
+                               + "<dd>" + geo.features[i].properties.epoch + "</dd>"
+                               + "<dd>" + geo.features[i].properties.status + "</dd>"
+                    var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                        .bindPopup(list)
+                        .on("mouseover", function (L) {
+                            this.openPopup();
+                        })
+                        .on("mouseout", function (L) {
+                            L.closePopup();
+                        });
+                    
+                    
+                    marker.push(geomarker);
                 }
             }
             
             for (i=0;i<marker.length;i++) {
-                //map.addLayer(marker[i]);
+                map.addLayer(marker[i]);
             }
             
         });
@@ -126,26 +141,59 @@
                 for (i=0; i<geo.features.length; i++) {
                     if (geo.features[i] != undefined ) {
                         
+                        var list = "<dd>" + geo.features[i].properties.owner + "</dd>"
+                               + "<dd>" + geo.features[i].geometry.coordinates + "</dd>"
+                               + "<dd>" + geo.features[i].properties.epoch + "</dd>"
+                               + "<dd>" + geo.features[i].properties.status + "</dd>"
+                        
                         var theDay = parseInt(geo.features[i].properties.epoch.getDate(), 10);
                         
                         if (geo.features[i].properties.epoch.getYear()+1900 == year) {
                             if ((monthNames[geo.features[i].properties.epoch.getMonth()+1]) == month) {
                                 if (theDay == day) {
-                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates);
+                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                                        .bindPopup(list)
+                                        .on("mouseover", function (L) {
+                                            this.openPopup();
+                                        })
+                                        .on("mouseout", function (L) {
+                                            L.closePopup();
+                                        });
                                     marker.push(geomarker);
                                 }
                                 if (day == 'ALL') {
-                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates);
+                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                                        .bindPopup(list)
+                                        .on("mouseover", function (L) {
+                                            this.openPopup();
+                                        })
+                                        .on("mouseout", function (L) {
+                                            L.closePopup();
+                                        });
                                     marker.push(geomarker);
                                 }
                             } 
                             if (month == 'ALL') {
                                 if (theDay == day) {
-                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates);
+                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                                        .bindPopup(list)
+                                        .on("mouseover", function (L) {
+                                            this.openPopup();
+                                        })
+                                        .on("mouseout", function (L) {
+                                            L.closePopup();
+                                        });
                                     marker.push(geomarker);
                                 }
                                 if (day == 'ALL') {
-                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates);
+                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                                        .bindPopup(list)
+                                        .on("mouseover", function (L) {
+                                            this.openPopup();
+                                        })
+                                        .on("mouseout", function (L) {
+                                            L.closePopup();
+                                        });
                                     marker.push(geomarker);
                                 }
                             } 
@@ -153,29 +201,64 @@
                         else if (year == 'ALL') {
                             if ((monthNames[geo.features[i].properties.epoch.getMonth()+1]) == month) {
                                 if (theDay == day) {
-                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates);
+                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                                        .bindPopup(list)
+                                        .on("mouseover", function (L) {
+                                            this.openPopup();
+                                        })
+                                        .on("mouseout", function (L) {
+                                            L.closePopup();
+                                        });
                                     marker.push(geomarker);
                                 }
                                 if (day == 'ALL') {
-                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates);
+                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                                        .bindPopup(list)
+                                        .on("mouseover", function (L) {
+                                            this.openPopup();
+                                        })
+                                        .on("mouseout", function (L) {
+                                            L.closePopup();
+                                        });
                                     marker.push(geomarker);
                                 }
                             } 
                             if (month == 'ALL') {
                                 if (theDay == day) {
-                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates);
+                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                                        .bindPopup(list)
+                                        .on("mouseover", function (L) {
+                                            this.openPopup();
+                                        })
+                                        .on("mouseout", function (L) {
+                                            L.closePopup();
+                                        });
                                     marker.push(geomarker);
                                 }
                                 if (day == 'ALL') {
-                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates);
+                                    var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                                        .bindPopup(list)
+                                        .on("mouseover", function (L) {
+                                            this.openPopup();
+                                        })
+                                        .on("mouseout", function (L) {
+                                            L.closePopup();
+                                        });
                                     marker.push(geomarker);
                                 }
                             }
                             
                         }
                         else if (day == 'ALL' && month == 'ALL' && year == 'ALL') {
-                            var geomarker= new L.marker(geo.features[i].geometry.coordinates);
-                            marker.push(geomarker);
+                            var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                                        .bindPopup(list)
+                                        .on("mouseover", function (L) {
+                                            this.openPopup();
+                                        })
+                                        .on("mouseout", function (L) {
+                                            L.closePopup();
+                                        });
+                                    marker.push(geomarker);
                         }
                     }
                 }
@@ -204,5 +287,7 @@
       
 
 	</script>
+    
+</div>
 </body>
 </html>
