@@ -88,7 +88,7 @@
                 tickettype= "&$where=ticket_status = \'OPEN\'";
             } else if (selector2 == 'other') {
                 overdue=false;
-                tickettype= "&$where=ticket_status != \'CLOSED\'";
+                tickettype= "&$where=ticket_status != \'CLOSED\' and  ticket_status != \'OPEN\'";
             }
             //console.log(selector2);
             plotpoints();
