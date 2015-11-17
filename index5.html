@@ -41,13 +41,13 @@
     
     <button onclick="setDate()" class="rightbutton">Set</button>
     
-    <!--
     <form action="" name="typeform" class="right">
-      <input type="checkbox" name="type" value="Open"> Open Tickets<br>
-      <input type="checkbox" name="type" value="Open Overdue"> Open Overdue Tickets<br> 
-      <input type="checkbox" name="type" value="All" checked> All Tickets
+      <input id="open" type="radio" name="type" value="Open" onchange='handleChange(open)'> Open Tickets<br>
+      <input id="overdue" type="radio" name="type" value="Open Overdue" onchange='handleChange(overdue)'> Open Overdue Tickets<br>
+      <input id="other" type="radio" name="type" value="Other" onchange='handleChange(other)'> Other
     </form>
--->
+    
+  
 
     <script type="text/javascript">
         //populatedropdown(id_of_day_select, id_of_month_select, id_of_year_select)
@@ -62,40 +62,50 @@
     
     
 	<script>
+        var geo = {"type": "FeatureCollection",
+                       "features": []};
+        var api_url = "https://opendata.miamidade.gov/resource/rbng-6mha.json?$where=case_owner ='Animal_Services' AND ticket_status = 'OPEN'";
         var day, month, year;
         var marker = new Array();
         var monthNames = ['ALL','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sept','Oct','Nov','Dec'];
         
+        
         //handle json/geojson
-		var api_url = "https://opendata.miamidade.gov/resource/rbng-6mha.json";
-		var geo = {"type": "FeatureCollection",
-				   "features": []};
-
-		$.getJSON( api_url, function( data ) {
-			  $.each( data, function( key, val ) {
-                var thedate = new Date(Date.parse(val.ticket_created_date_time))
-                
-                //&& val.case_owner== 'Waste_Management'
-                if (val.longitude ) {
-                  var feature = {"properties": 
-			  							{
-                                            //"epoch": val.ticket_created_date_time
-                                            "epoch": thedate,
-                                            "owner": val.case_owner,
-                                            "status": val.ticket_status
-                                        },
-			  						"geometry":
-			  							{"type": "Point",
-			  								"coordinates": [val.latitude,val.longitude,0]
-			  							},
-                                   "type": "Feature"
-			  						}
-                  }
-			  		geo.features.push(feature);
-                  
-			  });
-
+		function plotpoints() {
+            for (i=0;i<marker.length;i++) {
+                    map.removeLayer(marker[i]);
+            }
+            marker= [];
             
+            geo = {"type": "FeatureCollection",
+                       "features": []};
+            
+
+            $.getJSON( api_url, function( data ) {
+                  $.each( data, function( key, val ) {
+                    var thedate = new Date(Date.parse(val.ticket_created_date_time))
+
+                    //&& val.case_owner== 'Waste_Management'
+                    if (val.longitude ) {
+                      var feature = {"properties": 
+                                            {
+                                                //"epoch": val.ticket_created_date_time
+                                                "epoch": thedate,
+                                                "owner": val.case_owner,
+                                                "status": val.ticket_status
+                                            },
+                                        "geometry":
+                                            {"type": "Point",
+                                                "coordinates": [val.latitude,val.longitude,0]
+                                            },
+                                       "type": "Feature"
+                                        }
+                      }
+                        geo.features.push(feature);
+
+                  });
+
+        
             
             //Plot points
             for (i=0; i<geo.features.length; i++) {
@@ -112,7 +122,7 @@
                             this.openPopup();
                         })
                         .on("mouseout", function (L) {
-                            L.closePopup();
+                            this.closePopup();
                         });
                     
                     
@@ -125,7 +135,7 @@
             }
             
         });
-        
+        }
         
 //DATE SELECTION-------------------------------------------------------------------------        
          function setDate(){
@@ -271,6 +281,19 @@
             }
              
             
+        function handleChange (selector) {
+            if (selector == 'open') {
+                 api_url = "https://opendata.miamidade.gov/resource/rbng-6mha.json?$where=case_owner ='Animal_Services' AND ticket_status = 'OPEN'";
+                plotpoints();
+            } else if (selector == 'overdue') {
+                api_url = "https://opendata.miamidade.gov/resource/rbng-6mha.json?$where=case_owner ='Animal_Services' AND ticket_status = 'OPEN'";
+                plotpoints();
+            } else if (selector == 'other') {
+                api_url = "https://opendata.miamidade.gov/resource/rbng-6mha.json?$where=case_owner ='Animal_Services' AND ticket_status != 'OPEN' AND ticket_status != 'CLOSED'";
+                plotpoints();
+            }
+            //plotpoints();
+        }
 
             
 //-------------------------------------------------------------------------  

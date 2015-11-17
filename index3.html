@@ -16,44 +16,41 @@
     <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" type="text/css">
 
-    <!-- Include this library for mobile touch support  
-<script src="dates.js" type="text/javascript"></script>
-
--->
+    <!-- Include this library for mobile touch support  -->
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>
-    <script type="text/javascript" src="date.js"></script>
 
+    <script src="dates.js" type="text/javascript"></script>
+    
 </head>
 <body>
     
 <div id="wrapper">
     <h2 id="title">Miami-Dade 311 Requests: Animal Services</h2>
 
-    <h3>View Past: </h3>
+    <h3 >View Past: </h3>
     <!--Dates form -->
-    <div class="datebuttons">
-        <button id="day" type="button" value="day" onclick="setperiod(this)">Day</button>
-        <button id="month" type="button" value="month" onclick="setperiod(this)">Month</button>
-        <button id="year" type="button" value="year" onclick="setperiod(this)">Year</button>
-    </div>
-    
-    <h3 class="formdesign">OR Select Range:</h3>
-    <input type="date" id= "datestart" name="datestart" class="formdesign"> to
-    <input type="date" id= "dateend" name="dateend" class="formdesign">
-    <button type="button" onclick="setRange()">Go</button>
-    
+    <form action="" name="dateform">
+        <select id="daydropdown">
+        </select> 
+        <select id="monthdropdown">
+        </select> 
+        <select id="yeardropdown">
+        </select>
+        
+    </form>
+    <button onclick="setDate()" class="rightbutton">Set</button>
 
     <form action="" name="typeform" class="right">
-      <input id="open" type="radio" name="type" value="open" onchange='handleChange("open")' checked> Open Tickets<br>
-      <input id="overdue" type="radio" name="type" value="overdue" onchange='handleChange(overdue)'> Open Overdue Tickets<br>
-      <input id="other" type="radio" name="type" value="other" onchange='handleChange(other)'> Other
+      <input id="open" type="radio" name="type" value="Open" onchange='handleChange(this)'> Open Tickets<br>
+      <input id="overdue" type="radio" name="type" value="Open Overdue" onchange='handleChange2(this)'> Open Overdue Tickets<br>
+      <input id="other" type="radio" name="type" value="Other" onchange='handleChange3(this)'> Other
     </form>
    
 
     <script type="text/javascript">
-        //populatedropdown(id_of_day_select, id_of_month_select, id_of_year_select)
+        //populatedropdown(id_of_day_select, id_of_month_select, id_of_year_select);
         window.onload=function(){
-           // populatedropdown("daydropdown", "monthdropdown", "yeardropdown")    
+            populatedropdown("daydropdown", "monthdropdown", "yeardropdown")   ; 
         }
     </script>
 
@@ -70,71 +67,7 @@
         var marker = new Array();
         var api_url;
         
-        var tickettype = "&$where=ticket_status = \'OPEN\'";
-        var datestart;
-        var dateend;
-        var daterange;
-        var viewlast;
-        var q1 = "?case_owner=Animal_Services";
-        
-        
-        function handleChange (selector) {
-            selector2=selector.value;
-            if (selector2 == 'open') {
-                overdue=false;
-                tickettype= "&$where=ticket_status = \'OPEN\'";
-            } else if (selector2 == 'overdue') {
-                overdue=true;
-                tickettype= "&$where=ticket_status = \'OPEN\'";
-            } else if (selector2 == 'other') {
-                overdue=false;
-                tickettype= "&$where=ticket_status != \'CLOSED\'";
-            }
-            //console.log(selector2);
-            plotpoints();
-        }
-        
-        function setRange () {
-            datestart = (document.getElementById("datestart").value);
-            dateend = (document.getElementById("dateend").value);
-            daterange =  "and ticket_created_date_time >= \'" + datestart + "\' and ticket_created_date_time <= \'" + dateend + "\'";      
-            plotpoints();
-        }
-        
-        
-        function setperiod (selector) {
-            selector2 = selector.value;
-            if (selector2 == 'day') {
-                dateend = new Date();
-                dateend = dateend.toISOString().slice(0, 10);
-                datestart = new Date();
-                datestart.setDate(datestart.getDate()-1);
-                datestart = datestart.toISOString().slice(0, 10);
-            } else if (selector2 == 'month') {
-                dateend = new Date();
-                dateend = dateend.toISOString().slice(0, 10);
-                datestart = new Date();
-                datestart.setDate(datestart.getDate()-31);
-                datestart = datestart.toISOString().slice(0, 10);
-            } else if (selector2 == 'year') {
-                dateend = new Date();
-                dateend = dateend.toISOString().slice(0, 10);
-                datestart = new Date();
-                datestart.setDate(datestart.getDate()-365);
-                datestart = datestart.toISOString().slice(0, 10);
-            }
-            daterange =  "and ticket_created_date_time >= \'" + datestart + "\' and ticket_created_date_time <= \'" + dateend + "\'"; 
-            plotpoints();
-        }
-        
-        
         function plotpoints () {
-            if (daterange == undefined || daterange == "and ticket_created_date_time >= '' and ticket_created_date_time <= ''"){
-                api_url = "https://opendata.miamidade.gov/resource/dj6j-qg5t.json"+q1+tickettype;
-            } else {
-                api_url = "https://opendata.miamidade.gov/resource/dj6j-qg5t.json"+q1+tickettype+daterange;
-            }
-            
             for (i=0;i<marker.length;i++) {
                     map.removeLayer(marker[i]);
              }
@@ -174,7 +107,7 @@
                 for (i=0; i<geo.features.length; i++) {
                     
                     if (geo.features[i] != undefined) {
-                        
+                        console.log(geo.features[i].properties.goal-((new Date()) - (geo.features[0].properties.epoch))/(1000*60*60*24));
                         if (overdue==true) {
                             if (((new Date()) - (geo.features[i].properties.epoch))/(1000*60*60*24) > geo.features[i].properties.goal) {
                                 var list = "<dd>" + geo.features[i].properties.owner + "</dd>"
@@ -223,9 +156,63 @@
 
             });
             
+                
+        };
+        
+        
+        //handle json/geojson
+        
+        //open tickets
+        function handleChange(cb) {
+          if(cb.checked == true){
+            overdue=false;
+            api_url = "https://opendata.miamidade.gov/resource/rbng-6mha.json?$where=case_owner ='Animal_Services' AND ticket_status = 'OPEN'";
+              plotpoints();
+          }else{
+             for (i=0;i<marker.length;i++) {
+                map.removeLayer(marker[i]);
+             }
+             marker= [];
+          }
         }
         
-        //-------------------------------------------------------------------------  
+        //open overdue
+        function handleChange2(cb) {
+          if(cb.checked == true){
+            overdue=true;
+            api_url = "https://opendata.miamidade.gov/resource/rbng-6mha.json?$where=case_owner ='Animal_Services' AND ticket_status = 'OPEN'";
+            plotpoints();
+          }else{
+             for (i=0;i<marker.length;i++) {
+                map.removeLayer(marker[i]);
+             }
+             marker= [];
+          }
+        }
+        
+        //other
+        function handleChange3(cb) {
+          if(cb.checked == true){
+            overdue=false;
+            api_url = "https://opendata.miamidade.gov/resource/rbng-6mha.json?$where=case_owner ='Animal_Services' AND ticket_status != 'OPEN' AND ticket_status != 'CLOSED'";
+              plotpoints();
+          }else{
+             for (i=0;i<marker.length;i++) {
+                map.removeLayer(marker[i]);
+             }
+             marker= [];
+          }
+        }
+       
+		
+        
+		
+        
+//Date Selection-----------------------------------------------------------
+        
+        
+            
+//-------------------------------------------------------------------------  
         //map layers
         var latlng = L.latLng(25.7353, -80.3089);
 		var map = L.map('map').setView(latlng, 10);
@@ -236,6 +223,8 @@
 		      maxZoom: 17,
 		      minZoom: 9
 		    }).addTo(map);
+        
+      
 
 	</script>
     
