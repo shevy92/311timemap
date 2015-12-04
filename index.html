@@ -32,9 +32,9 @@
     <h3>View Past: </h3>
     <!--Dates form -->
     <div class="datebuttons">
-        <button id="day" type="button" value="day" onclick="setperiod(this)">Day</button>
-        <button id="month" type="button" value="month" onclick="setperiod(this)">Month</button>
-        <button id="year" type="button" value="year" onclick="setperiod(this)">Year</button>
+        <button id="day" type="button" value="day" onclick="setperiod(this)">7 days</button>
+        <button id="month" type="button" value="month" onclick="setperiod(this)">30 days</button>
+        <button id="year" type="button" value="year" onclick="setperiod(this)">365 days</button>
     </div>
     
     <h3 class="formdesign">OR Select Range:</h3>
@@ -49,12 +49,14 @@
       <input id="other" type="radio" name="type" value="other" onchange='handleChange(other)'> Other
     </form>
    
+    <form id="issueForm">
+      <select id="selectIssue">
+        <option>Select an Issue Type</option>
+      </select>
+    </form>
 
     <script type="text/javascript">
-        //populatedropdown(id_of_day_select, id_of_month_select, id_of_year_select)
-        window.onload=function(){
-           // populatedropdown("daydropdown", "monthdropdown", "yeardropdown")    
-        }
+        
     </script>
 
     <!--Map -->
@@ -76,6 +78,8 @@
         var daterange;
         var viewlast;
         var q1 = "?case_owner=Animal_Services";
+        var q2;
+        var issues=[];
         
         
         function handleChange (selector) {
@@ -108,7 +112,7 @@
                 dateend = new Date();
                 dateend = dateend.toISOString().slice(0, 10);
                 datestart = new Date();
-                datestart.setDate(datestart.getDate()-1);
+                datestart.setDate(datestart.getDate()-7);
                 datestart = datestart.toISOString().slice(0, 10);
             } else if (selector2 == 'month') {
                 dateend = new Date();
@@ -154,7 +158,8 @@
                                                 "epoch": thedate,
                                                 "owner": val.case_owner,
                                                 "status": val.ticket_status,
-                                                "goal": val.goal_days
+                                                "goal": val.goal_days, 
+                                                "type": val.issue_type
                                             },
                                         "geometry":
                                             {"type": "Point",
@@ -175,12 +180,21 @@
                     
                     if (geo.features[i] != undefined) {
                         
+                        var goalpast = (((new Date()) - (geo.features[i].properties.epoch))/(1000*60*60*24)-geo.features[i].properties.goal).toString().slice(0, 4);
+                        
+                        if (issues.indexOf(geo.features[i].properties.type)==-1) {
+                            issues.push(geo.features[i].properties.type);
+                        }
+                        
+                        
                         if (overdue==true) {
                             if (((new Date()) - (geo.features[i].properties.epoch))/(1000*60*60*24) > geo.features[i].properties.goal) {
                                 var list = "<dd>" + geo.features[i].properties.owner + "</dd>"
                                        + "<dd>" + geo.features[i].geometry.coordinates + "</dd>"
                                        + "<dd>" + geo.features[i].properties.epoch + "</dd>"
+                                       + "<dd>" + "Issue Type: " + geo.features[i].properties.type + "</dd>"
                                        + "<dd>" + "Goal Days: " + geo.features[i].properties.goal + "</dd>"
+                                       + "<dd>" + "Days past goal: " + goalpast + "</dd>"
                                        + "<dd>" + "Status: " + geo.features[i].properties.status + "</dd>"
                                 var geomarker= new L.marker(geo.features[i].geometry.coordinates)
                                     .bindPopup(list)
@@ -199,6 +213,7 @@
                             var list = "<dd>" + geo.features[i].properties.owner + "</dd>"
                                        + "<dd>" + geo.features[i].geometry.coordinates + "</dd>"
                                        + "<dd>" + geo.features[i].properties.epoch + "</dd>"
+                                       + "<dd>" + "Issue Type: " + geo.features[i].properties.type + "</dd>"
                                        + "<dd>" + "Goal Days: " + geo.features[i].properties.goal + "</dd>"
                                        + "<dd>" + "Status: " + geo.features[i].properties.status + "</dd>"
                             var geomarker= new L.marker(geo.features[i].geometry.coordinates)
@@ -223,6 +238,26 @@
 
             });
             
+            dropdownempty();
+            dropdownfill();
+            
+        }
+        
+        function dropdownempty (){
+            var select = document.getElementById("selectIssue");
+            var length = select.options.length;
+            for (i = 0; i < length; i++) {
+              select.options[i] = null;
+            }
+            
+        }
+        
+        function dropdownfill (){
+            
+            var dropdown = document.getElementById("selectIssue");
+                for (var i = 0; i < issues.length; i++) {
+                    dropdown[dropdown.length] = new Option(issues[i], issues[i]);
+                }
         }
         
         //-------------------------------------------------------------------------  
@@ -236,6 +271,11 @@
 		      maxZoom: 17,
 		      minZoom: 9
 		    }).addTo(map);
+        
+        window.onload = plotpoints();
+        //window.onload = dropdownfill();
+        
+        
 
 	</script>
     
