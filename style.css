@@ -21,7 +21,7 @@ body {
 
 .right {
     margin-left: 400px;
-    margin-top: -55px;
+    margin-top: -135px;
 }
 
 .datebuttons {
@@ -29,4 +29,9 @@ body {
 
 .formdesign {
     font-family: sans-serif;
+}
+#selectIssue {
+}
+#issueForm {
+    margin-left: 400px;
 }

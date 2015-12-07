@@ -44,13 +44,14 @@
     
 
     <form action="" name="typeform" class="right">
-      <input id="open" type="radio" name="type" value="open" onchange='handleChange("open")' checked> Open Tickets<br>
-      <input id="overdue" type="radio" name="type" value="overdue" onchange='handleChange(overdue)'> Open Overdue Tickets<br>
+      <input id="open" type="radio" name="type" value="open" onchange='handleChange(open)' checked> Open Tickets<br>
+      <input id="overdue" type="radio" name="type" value="overdue" onchange='handleChange(overdue)'> Open Overdue ONLY<br>
       <input id="other" type="radio" name="type" value="other" onchange='handleChange(other)'> Other
     </form>
    
     <form id="issueForm">
-      <select id="selectIssue">
+        <h3>Select Issue Type: </h3>
+      <select id="selectIssue" onchange='issuechange()'>
         <option>Select an Issue Type</option>
       </select>
     </form>
@@ -80,6 +81,21 @@
         var q1 = "?case_owner=Animal_Services";
         var q2;
         var issues=[];
+        var issuetype;
+        var issueselected;
+        
+        
+        var blueIcon = L.icon({
+            iconUrl: 'markers/blue.png',
+            iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+            popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+        });
+        
+        var redIcon = L.icon({
+            iconUrl: 'markers/red.png',
+            iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+            popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+        });
         
         
         function handleChange (selector) {
@@ -94,8 +110,9 @@
                 overdue=false;
                 tickettype= "&$where=ticket_status != \'CLOSED\' and  ticket_status != \'OPEN\'";
             }
-            //console.log(selector2);
+            console.log(selector2, overdue);
             plotpoints();
+            dropdownfill();
         }
         
         function setRange () {
@@ -103,6 +120,8 @@
             dateend = (document.getElementById("dateend").value);
             daterange =  "and ticket_created_date_time >= \'" + datestart + "\' and ticket_created_date_time <= \'" + dateend + "\'";      
             plotpoints();
+            //dropdownempty();
+            dropdownfill();
         }
         
         
@@ -128,21 +147,33 @@
                 datestart = datestart.toISOString().slice(0, 10);
             }
             daterange =  "and ticket_created_date_time >= \'" + datestart + "\' and ticket_created_date_time <= \'" + dateend + "\'"; 
+            
+            plotpoints();
+            //dropdownempty();
+            dropdownfill();
+        }
+        
+        function issuechange() {
+            issueselected = document.getElementById("selectIssue").value;
+            issuetype = " and issue_type=\'" +issueselected+"\'";
             plotpoints();
         }
         
-        
         function plotpoints () {
-            if (daterange == undefined || daterange == "and ticket_created_date_time >= '' and ticket_created_date_time <= ''"){
+            if ((daterange == undefined || daterange == "and ticket_created_date_time >= '' and ticket_created_date_time <= ''" ) && (issuetype == undefined || issuetype == " and issue_type='All'")) {
                 api_url = "https://opendata.miamidade.gov/resource/dj6j-qg5t.json"+q1+tickettype;
-            } else {
+            } else if (daterange == undefined || daterange == "and ticket_created_date_time >= '' and ticket_created_date_time <= ''" && issuetype != undefined) {
+                api_url = "https://opendata.miamidade.gov/resource/dj6j-qg5t.json"+q1+tickettype+issuetype;
+            } else if (daterange != undefined && issuetype == undefined || issuetype == " and issue_type='All'") {
                 api_url = "https://opendata.miamidade.gov/resource/dj6j-qg5t.json"+q1+tickettype+daterange;
+            } else {
+                api_url = "https://opendata.miamidade.gov/resource/dj6j-qg5t.json"+q1+tickettype+daterange+issuetype;
             }
             
             for (i=0;i<marker.length;i++) {
                     map.removeLayer(marker[i]);
-             }
-             marker= [];
+            }
+            marker= [];
             geo = {"type": "FeatureCollection",
 				   "features": []};
             
@@ -196,7 +227,7 @@
                                        + "<dd>" + "Goal Days: " + geo.features[i].properties.goal + "</dd>"
                                        + "<dd>" + "Days past goal: " + goalpast + "</dd>"
                                        + "<dd>" + "Status: " + geo.features[i].properties.status + "</dd>"
-                                var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                                var geomarker= new L.marker(geo.features[i].geometry.coordinates, {icon: redIcon})
                                     .bindPopup(list)
                                     .on("mouseover", function (L) {
                                         this.openPopup();
@@ -208,6 +239,25 @@
 
                                 marker.push(geomarker);
                             }
+                        } else if (overdue==false && ((new Date()) - (geo.features[i].properties.epoch))/(1000*60*60*24) > geo.features[i].properties.goal) {
+                            var list = "<dd>" + geo.features[i].properties.owner + "</dd>"
+                                       + "<dd>" + geo.features[i].geometry.coordinates + "</dd>"
+                                       + "<dd>" + geo.features[i].properties.epoch + "</dd>"
+                                       + "<dd>" + "Issue Type: " + geo.features[i].properties.type + "</dd>"
+                                       + "<dd>" + "Goal Days: " + geo.features[i].properties.goal + "</dd>"
+                                       + "<dd>" + "Days past goal: " + goalpast + "</dd>"
+                                       + "<dd>" + "Status: " + geo.features[i].properties.status + "</dd>"
+                                var geomarker= new L.marker(geo.features[i].geometry.coordinates, {icon: redIcon})
+                                    .bindPopup(list)
+                                    .on("mouseover", function (L) {
+                                        this.openPopup();
+                                    })
+                                    .on("mouseout", function (L) {
+                                        this.closePopup();
+                                    });
+
+
+                                marker.push(geomarker);
                         } else {
                             //console.log(geo.features[i].properties.status);
                             var list = "<dd>" + geo.features[i].properties.owner + "</dd>"
@@ -216,7 +266,7 @@
                                        + "<dd>" + "Issue Type: " + geo.features[i].properties.type + "</dd>"
                                        + "<dd>" + "Goal Days: " + geo.features[i].properties.goal + "</dd>"
                                        + "<dd>" + "Status: " + geo.features[i].properties.status + "</dd>"
-                            var geomarker= new L.marker(geo.features[i].geometry.coordinates)
+                            var geomarker= new L.marker(geo.features[i].geometry.coordinates, {icon: blueIcon})
                                 .bindPopup(list)
                                 .on("mouseover", function (L) {
                                     this.openPopup();
@@ -238,7 +288,6 @@
 
             });
             
-            dropdownempty();
             dropdownfill();
             
         }
@@ -247,22 +296,28 @@
             var select = document.getElementById("selectIssue");
             var length = select.options.length;
             for (i = 0; i < length; i++) {
-              select.options[i] = null;
+              select.options[i].remove();
             }
             
         }
         
         function dropdownfill (){
+            var select = document.getElementById("selectIssue");
+            if (select.options.length >1) {
+                select.options.remove();
+            }
+            
             
             var dropdown = document.getElementById("selectIssue");
-                for (var i = 0; i < issues.length; i++) {
+                dropdown[0] = new Option("All", "All");
+                for (var i = 1; i < issues.length; i++) {
                     dropdown[dropdown.length] = new Option(issues[i], issues[i]);
                 }
         }
         
         //-------------------------------------------------------------------------  
         //map layers
-        var latlng = L.latLng(25.7353, -80.3089);
+        var latlng = L.latLng(25.7853, -80.4089);
 		var map = L.map('map').setView(latlng, 10);
         
 
